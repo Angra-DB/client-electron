@@ -1,4 +1,89 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { FormControl } from '@angular/forms';
+import { RequestService } from './request.service';
+
+export enum ValidCommands {
+  CreateDb = "create_db",
+  Connect = "connect",
+  Save = "save",
+  SaveKey = "save_key",
+  Lookup = "lookup",
+  Update = "update",
+  Delete = "delete",
+  Query = "query",
+  QueryTerm = "query_term",
+  BulkLookup = "bulk_lookup"
+}
+
+export class RequestModel {
+  host: string;
+  port: string;
+  operation: string;
+  database: string;
+  key: string;
+  keyRange: string;
+  document: string;
+  commands: string[];
+  times: number;
+
+  public setCommands() {
+    let cmds = [];
+    
+    switch(this.operation) {
+      case ValidCommands.CreateDb:
+        cmds.push(`${this.operation} ${this.database}`);
+        cmds.push(`${ValidCommands.Connect} ${this.database}`);
+        break;
+
+      case ValidCommands.Connect:
+        cmds.push(`${this.operation} ${this.database}`);
+        break;
+
+      case ValidCommands.Save:
+        cmds.push(`${ValidCommands.Connect} ${this.database}`);
+        if (this.key) {
+          cmds.push(`${ValidCommands.SaveKey} ${this.key} ${this.document.length} ${this.document}`);
+        } else {
+          for (let i = 0; i < this.times; i++) {
+            cmds.push(`${this.operation} ${this.document.length} ${this.document}`);
+          }
+        }
+        break;
+        
+      case ValidCommands.Lookup:
+        cmds.push(`${ValidCommands.Connect} ${this.database}`);
+        cmds.push(`${this.operation} ${this.key}`);
+        break;
+
+      case ValidCommands.Update:
+        cmds.push(`${ValidCommands.Connect} ${this.database}`);
+        cmds.push(`${this.operation} ${this.key} ${this.document.length} ${this.document}`);
+        break;
+
+      case ValidCommands.Delete:
+        cmds.push(`${ValidCommands.Connect} ${this.database}`);
+        cmds.push(`${this.operation} ${this.key}`);
+        break;
+
+      case ValidCommands.Query:
+        cmds.push(`${ValidCommands.Connect} ${this.database}`);
+        cmds.push(`${this.operation} ${this.key}`);
+        break;
+
+      case ValidCommands.QueryTerm:
+        cmds.push(`${ValidCommands.Connect} ${this.database}`);
+        cmds.push(`${this.operation} ${this.key}`);
+        break;
+
+      case ValidCommands.BulkLookup:
+        cmds.push(`${ValidCommands.Connect} ${this.database}`);
+        cmds.push(`${this.operation} ${this.keyRange}`);
+        break;
+    }
+
+    this.commands = cmds;
+  }
+}
 
 @Component({
   selector: 'app-root',
@@ -7,4 +92,42 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'angra-client';
+
+  @Input('ngModel')
+  model = new RequestModel();
+
+  public response = "";
+
+  constructor(private requestService: RequestService) { }
+
+  async onSubmit() { 
+    this.model.setCommands();
+    let response = await this.requestService.sendRequest(this.model);
+    this.response += "\n";
+    this.response += response;
+  }
+
+  onResetRes() {
+    this.response = "";
+  }
+
+  showKeyField() {
+    return this.model.operation === ValidCommands.Save ||
+      this.model.operation === ValidCommands.Lookup ||
+      this.model.operation === ValidCommands.Update ||
+      this.model.operation === ValidCommands.Delete;
+  }
+
+  showDocumentField() {
+    return this.model.operation === ValidCommands.Save ||
+      this.model.operation === ValidCommands.Update;
+  }
+
+  showTimes() {
+    return this.model.operation === ValidCommands.Save;
+  }
+
+  showOptional() {
+    return this.model.operation === ValidCommands.Save;
+  }
 }
