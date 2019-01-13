@@ -49,7 +49,7 @@
                 </div>
                 
                 <div class="form-group" fxLayout="row" *ngIf="showTimes()">
-                  <mat-slider thumbLabel step="1" min="1" max="100" [(ngModel)]="times"></mat-slider>
+                  <mat-slider thumbLabel step="1" min="1" max="100" name="times" [(ngModel)]="model.times"></mat-slider>
                 </div>
 
                 <div class="form-group" fxLayout="row" *ngIf="showKeyField()">
