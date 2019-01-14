@@ -49,7 +49,7 @@
                 </div>
                 
                 <div class="form-group" fxLayout="row" *ngIf="showTimes()">
-                  <mat-slider thumbLabel step="1" min="1" max="100" name="times" [(ngModel)]="model.times"></mat-slider>
+                  <mat-slider thumbLabel step="1" min="1" max="1000" name="times" [(ngModel)]="model.times"></mat-slider>
                 </div>
 
                 <div class="form-group" fxLayout="row" *ngIf="showKeyField()">
@@ -62,7 +62,7 @@
                 <div class="form-group" fxLayout="row" *ngIf="showDocumentField()">
                   <mat-form-field fxFlex="100%" appearance="outline">
                     <mat-label>Document Content</mat-label>
-                    <textarea (keyDown.Tab)="$event.preventDefault()" style="resize: none;" rows="10" matInput placeHolder="Document" name="document" [(ngModel)]="model.document"></textarea>
+                    <textarea (keydown.Tab)="onTabPress($event)" (keydown.Shift.Tab)="onShiftTabPress($event)" style="resize: none;" rows="10" matInput placeHolder="Document" name="document" [(ngModel)]="model.document"></textarea>
                   </mat-form-field>
                 </div>
             </mat-card-content>

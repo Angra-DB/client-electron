@@ -111,6 +111,82 @@ export class AppComponent {
     this.response = "";
   }
 
+  onTabPress(event) {
+    const tab = "   ";
+    event.preventDefault();
+
+    let element = event.target;
+
+    let val = element.value,
+        start = element.selectionStart,
+        end = element.selectionEnd;
+
+    var delimiter = /[\r\n]/i;
+    let deltaStart = null;
+    if (start === end) {
+      deltaStart = start;
+    } else {
+      for (var i = (start-1); i >= 0; i--) {
+        if (delimiter.test(val.charAt(i))) {
+          deltaStart = i + 1;
+        }
+      }
+      if (!deltaStart) {
+        deltaStart = 0;
+      }
+    }
+    let deltaEnd = end;
+    let deltaValue = val.slice(deltaStart, deltaEnd);
+
+    let preDelta = val.slice(0, deltaStart);
+    let postDelta = val.slice(deltaEnd);
+
+    let replacement = deltaValue.replace(new RegExp(("(^|" + "\n" + ")"), "g"), ("$1" + tab));
+
+    // Update values.
+    element.value = (preDelta + replacement + postDelta);
+    element.selectionStart = (start + tab.length);
+    element.selectionEnd = (end + (replacement.length - deltaValue.length));
+  }
+
+  onShiftTabPress(event) {
+    const tab = "   ";
+    event.preventDefault();
+
+    let element = event.target;
+
+    let val = element.value,
+        start = element.selectionStart,
+        end = element.selectionEnd;
+
+    var delimiter = /[\r\n]/i;
+    let deltaStart = null;
+    if (start === end) {
+      deltaStart = start;
+    } else {
+      for (var i = (start-1); i >= 0; i--) {
+        if (delimiter.test(val.charAt(i))) {
+          deltaStart = i + 1;
+        }
+      }
+      if (!deltaStart) {
+        deltaStart = 0;
+      }
+    }
+    let deltaEnd = end;
+    let deltaValue = val.slice(deltaStart, deltaEnd);
+    let deltaHasLeadingTab = (deltaValue.indexOf(tab) === 0);
+
+    let preDelta = val.slice(0, deltaStart);
+    let postDelta = val.slice(deltaEnd);
+
+    let replacement = deltaValue.replace(new RegExp(("^" + tab), "gm"), "");
+
+    element.value = (preDelta + replacement + postDelta);
+    element.selectionStart = deltaHasLeadingTab ? (start - tab.length) : start;
+    element.selectionEnd = (end - (deltaValue.length - replacement.length));
+  }
+
   showKeyField() {
     return this.model.operation === ValidCommands.Save ||
       this.model.operation === ValidCommands.Lookup ||
